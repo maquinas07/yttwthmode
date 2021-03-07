@@ -3,7 +3,6 @@ const pageManagerContainer = document.getElementsByClassName("ytd-page-manager")
 
 const theaterContainer = document.getElementById("player-theater-container");
 
-const columns = document.getElementById("columns");
 const meta = document.getElementById("meta");
 const info = document.getElementById("info");
 const related = document.getElementById("related");
@@ -87,12 +86,12 @@ const toggleIsOneColumn = () => {
         chat.style.marginTop = "0px";
         chatFrame.style.width = "100%";
         chatFrame.style.height = "calc(100vh - ((var(--ytd-watch-flexy-height-ratio)/var(--ytd-watch-flexy-width-ratio))*100vw))";
+        chatFrame.style.maxHeight = `calc(100vh - ${getComputedStyle(theaterContainer).minHeight})`;
         chatFrame.style.position = "absolute";
         chatFrame.style.left = "0px";
         chatFrame.style.bottom = "0px";
         chatFrame.style.right = "";
         chatFrame.style.top = "";
-        columns.style.marginTop = "0px";
         meta.style.display = "none";
         info.style.display = "none";
         hideButton.style.display = "none";
@@ -101,7 +100,7 @@ const toggleIsOneColumn = () => {
         toggleChatFrameStyle();
         chat.style.marginTop = "";
         chatFrame.style.left = "";
-        columns.style.marginTop = "";
+        chatFrame.style.maxHeight = "";
         meta.style.display = "";
         info.style.display = "";
         hideButton.style.display = "";
