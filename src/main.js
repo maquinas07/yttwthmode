@@ -8,8 +8,6 @@ const info = document.getElementById("info");
 const related = document.getElementById("related");
 const headerNav = document.getElementById("masthead-container");
 
-const miniPlayer = document.getElementsByClassName("ytd-miniplayer")[0];
-
 var chatWidth = "400px";
 
 var isTheater = false;
@@ -19,12 +17,13 @@ var chat = document.getElementById("chat");
 var chatFrame = document.getElementById("chatframe");
 var hideButton = document.getElementById("show-hide-button");
 
+const isLive = chat || chatFrame;
+
 const reloadChatElems = () => {
     chat = document.getElementById("chat");
     chatFrame = document.getElementById("chatframe");
     hideButton = document.getElementById("show-hide-button");
 }
-
 
 const toggleVideoPlayerStyle = () => {
     if (isTheater) {
@@ -119,14 +118,16 @@ const handleTheaterMode = (mutationsList) => {
     }
 }
 
-const theaterToggleObserver = new MutationObserver(handleTheaterMode);
-theaterToggleObserver.observe(pageManagerContainer, { attributes: true });
+if (isLive) {
+    const theaterToggleObserver = new MutationObserver(handleTheaterMode);
+    theaterToggleObserver.observe(pageManagerContainer, { attributes: true });
 
-if (pageManagerContainer.getAttribute("is-two-columns_") == null) {
-    isOneColumn = true
-}
+    if (pageManagerContainer.getAttribute("is-two-columns_") == null) {
+        isOneColumn = true
+    }
 
-if (theaterContainer.hasChildNodes()) {
-    isTheater = true;
-    toggleMode();
+    if (theaterContainer.hasChildNodes()) {
+        isTheater = true;
+        toggleMode();
+    }
 }
