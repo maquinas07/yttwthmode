@@ -1,0 +1,16 @@
+{
+    "manifest_version": 2,
+    "name": "Twitch Theater Mode for Youtube",
+    "version": "1.0",
+    "description": "Adds a Twitch-like theater mode to youtube livestreams.",
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*.youtube.com/watch?v=*"
+            ],
+            "js": [
+                "src/main.js"
+            ]
+        }
+    ]
+}
