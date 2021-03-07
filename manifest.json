@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Twitch Theater Mode for Youtube",
-  "version": "1.0",
-  "description": "Adds a Twitch-like theater mode to youtube livestreams.",
+  "name": "yttwthmode",
+  "version": "1.0.0",
+  "description": "Twitch-like theater mode for Youtube livestreams and archives.",
   "content_scripts": [
     {
       "matches": [

@@ -1,8 +1,4 @@
 {
-  "name": "yttwthmode",
-  "version": "0.1.0",
-  "description": "Twitch-like theater mode for Youtube",
-  "main": "main.js",
   "author": "Elias Menon",
   "license": "MIT",
   "scripts": {
