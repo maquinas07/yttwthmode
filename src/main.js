@@ -14,17 +14,11 @@ const miniPlayer = document.getElementsByClassName("ytd-miniplayer")[0];
 const toggleVideoPlayerStyle = () => {
     if (!document.documentElement.style.overflow) {
         document.documentElement.style.overflow = "hidden";
-    } else {
-        document.documentElement.style.overflow = "";
-    }
-    if (!pageManager.style.marginTop) {
         pageManager.style.marginTop = "0px";
-    } else {
-        pageManager.style.marginTop = "";
-    }
-    if (theaterContainer.style.height !== "100vh") {
         theaterContainer.style.cssText = theaterContainer.style.cssText + "width: calc(100% - 400px); height: 100vh; max-height: none;"
     } else {
+        document.documentElement.style.overflow = "";
+        pageManager.style.marginTop = "";
         theaterContainer.style.width = "";
         theaterContainer.style.height = "";
         theaterContainer.style.maxHeight = "";
@@ -46,12 +40,9 @@ const toggleChatFrameStyle = () => {
 const toggleHideElements = () => {
     if (!related.style.display) {
         related.style.display = "none";
-    } else {
-        related.style.display = "";
-    }
-    if (!headerNav.style.display) {
         headerNav.style.display = "none";
     } else {
+        related.style.display = "";
         headerNav.style.display = "";
     }
 }
