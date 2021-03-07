@@ -10,7 +10,7 @@ var headerNav;
 
 var normalComments;
 
-var chatWidth = "400px";
+var chatWidth = 400;
 
 var isTheater = false;
 var isOneColumn = false;
@@ -46,7 +46,7 @@ const toggleVideoPlayerStyle = () => {
     if (isTheater) {
         document.documentElement.style.overflow = "hidden";
         pageManager.style.marginTop = "0px";
-        theaterContainer.style.width = `calc(100% - ${chatWidth})`;
+        theaterContainer.style.width = `calc(100% - ${chatWidth}px)`;
         theaterContainer.style.height = "100vh";
         theaterContainer.style.maxHeight = "none";
         if (isOneColumn) {
@@ -64,7 +64,7 @@ const toggleVideoPlayerStyle = () => {
 const toggleChatFrameStyle = () => {
     reloadChatElems();
     if (isTheater) {
-        chatFrame.style.width = chatWidth;
+        chatFrame.style.width = `${chatWidth}px`;
         chatFrame.style.height = "100vh";
         chatFrame.style.position = "absolute";
         chatFrame.style.right = "0px";
@@ -102,7 +102,7 @@ const toggleIsOneColumn = () => {
         chat.style.marginTop = "0px";
         chatFrame.style.width = "100%";
         chatFrame.style.height = "calc(100vh - ((var(--ytd-watch-flexy-height-ratio)/var(--ytd-watch-flexy-width-ratio))*100vw))";
-        chatFrame.style.maxHeight = `calc(100vh - ${getComputedStyle(theaterContainer).minHeight})`;
+        chatFrame.style.maxHeight = `calc(100vh - ${theaterContainer.style.minHeight})`;
         chatFrame.style.position = "absolute";
         chatFrame.style.left = "0px";
         chatFrame.style.bottom = "0px";
@@ -162,6 +162,22 @@ const tryInject = (count) => {
         if (theaterContainer.hasChildNodes()) {
             isTheater = true;
             toggleMode();
+
+            // Bad (but working) workaround for initialization race condition where the video player would be wider
+            // than the theater container and clip inside the chat.
+            const video = document.getElementsByClassName("video-stream")[0];
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+            const dirtyWorkaround = () => {
+                if (video.style.width !== `${vw - chatWidth}px`) {
+                    window.dispatchEvent(new Event("resize"));
+                    setTimeout(() => {
+                        dirtyWorkaround();
+                    }, 500);
+                } else {
+                    return;
+                }
+            }
+            dirtyWorkaround();
         }
         ready = true;
     }
