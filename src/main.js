@@ -7,6 +7,7 @@ var meta;
 var info;
 var related;
 var headerNav;
+var primaryColumn;
 
 var normalComments;
 
@@ -32,6 +33,7 @@ const reloadPageElems = () => {
     info = document.getElementById("info");
     related = document.getElementById("related");
     headerNav = document.getElementById("masthead-container");
+    primaryColumn = document.getElementById("primary");
 
     normalComments = document.getElementById("comments");
 }
@@ -95,19 +97,24 @@ const toggleMode = () => {
 }
 
 const toggleIsOneColumn = () => {
+    /* There's strange behavior using calc() in Firefox.
+        `chatFrame.style.maxHeight = calc(100vh - ${window.getComputedStyle(theaterContainer).minHeight})`
+        sets calc(-480px + 100vh) to the max-height attribute and it fails to render.
+        But even stranger, it works when ran directly from the debug console. */
+
     if (isTheater && isOneColumn) {
         reloadChatElems();
         theaterContainer.style.width = "100%";
         theaterContainer.style.height = "";
         chat.style.marginTop = "0px";
+        chat.style.height = `calc(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw)`;
         chatFrame.style.width = "100%";
-        chatFrame.style.height = "calc(100vh - ((var(--ytd-watch-flexy-height-ratio)/var(--ytd-watch-flexy-width-ratio))*100vw))";
-        chatFrame.style.maxHeight = `calc(100vh - ${theaterContainer.style.minHeight})`;
-        chatFrame.style.position = "absolute";
-        chatFrame.style.left = "0px";
-        chatFrame.style.bottom = "0px";
+        chatFrame.style.height = `max(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw, 100vh - ${window.getComputedStyle(theaterContainer).minHeight})`;
         chatFrame.style.right = "";
         chatFrame.style.top = "";
+        chatFrame.style.position = "";
+        primaryColumn.style.marginLeft = "0px";
+        primaryColumn.style.paddingRight = "0px";
         meta.style.display = "none";
         info.style.display = "none";
         hideButton.style.display = "none";
@@ -118,8 +125,9 @@ const toggleIsOneColumn = () => {
         toggleVideoPlayerStyle();
         toggleChatFrameStyle();
         chat.style.marginTop = "";
-        chatFrame.style.left = "";
-        chatFrame.style.maxHeight = "";
+        chat.style.height = "";
+        primaryColumn.style.marginLeft = "";
+        primaryColumn.style.paddingRight = "";
         meta.style.display = "";
         info.style.display = "";
         hideButton.style.display = "";
@@ -189,5 +197,6 @@ const tryInject = (count) => {
         }, 500);
     }
 }
+
 
 tryInject(20);
