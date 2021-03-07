@@ -2,7 +2,7 @@
   "author": "Elias Menon",
   "license": "MIT",
   "scripts": {
-    "build": "web-ext build -i package.json yarn.lock"
+    "build": "web-ext build -i package.json yarn.lock -o"
   },
   "devDependencies": {
     "web-ext": "^5.5.0"
