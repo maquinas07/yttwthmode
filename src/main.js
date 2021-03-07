@@ -1,23 +1,40 @@
-const pageManager = document.getElementById("page-manager");
-const pageManagerContainer = document.getElementsByClassName("ytd-page-manager")[0];
+var pageManager;
+var pageManagerContainer;
 
-const theaterContainer = document.getElementById("player-theater-container");
+var theaterContainer;
 
-const meta = document.getElementById("meta");
-const info = document.getElementById("info");
-const related = document.getElementById("related");
-const headerNav = document.getElementById("masthead-container");
+var meta;
+var info;
+var related;
+var headerNav;
+
+var normalComments;
 
 var chatWidth = "400px";
 
 var isTheater = false;
 var isOneColumn = false;
 
-var chat = document.getElementById("chat");
-var chatFrame = document.getElementById("chatframe");
-var hideButton = document.getElementById("show-hide-button");
+var chat;
+var chatFrame;
+var hideButton;
 
-const isLive = chat || chatFrame;
+var isLive;
+var isArchive;
+
+const reloadPageElems = () => {
+    pageManager = document.getElementById("page-manager");
+    pageManagerContainer = document.getElementsByClassName("ytd-page-manager")[0];
+
+    theaterContainer = document.getElementById("player-theater-container");
+
+    meta = document.getElementById("meta");
+    info = document.getElementById("info");
+    related = document.getElementById("related");
+    headerNav = document.getElementById("masthead-container");
+
+    normalComments = document.getElementById("comments");
+}
 
 const reloadChatElems = () => {
     chat = document.getElementById("chat");
@@ -94,6 +111,9 @@ const toggleIsOneColumn = () => {
         meta.style.display = "none";
         info.style.display = "none";
         hideButton.style.display = "none";
+        if (isArchive) {
+            normalComments.style.display = "none";
+        }
     } else {
         toggleVideoPlayerStyle();
         toggleChatFrameStyle();
@@ -103,6 +123,9 @@ const toggleIsOneColumn = () => {
         meta.style.display = "";
         info.style.display = "";
         hideButton.style.display = "";
+        if (isArchive) {
+            normalComments.style.display = "";
+        }
     }
 }
 
@@ -118,16 +141,37 @@ const handleTheaterMode = (mutationsList) => {
     }
 }
 
-if (isLive) {
-    const theaterToggleObserver = new MutationObserver(handleTheaterMode);
-    theaterToggleObserver.observe(pageManagerContainer, { attributes: true });
-
-    if (pageManagerContainer.getAttribute("is-two-columns_") == null) {
-        isOneColumn = true
+const tryInject = (count) => {
+    if (count < 1) {
+        return;
     }
+    reloadPageElems();
+    reloadChatElems();
+    isLive = chat || chatFrame;
+    isArchive = isLive && normalComments;
 
-    if (theaterContainer.hasChildNodes()) {
-        isTheater = true;
-        toggleMode();
+    var ready;
+    if (isLive && theaterContainer && pageManagerContainer) {
+        const theaterToggleObserver = new MutationObserver(handleTheaterMode);
+        theaterToggleObserver.observe(pageManagerContainer, { attributes: true });
+
+        if (pageManagerContainer.getAttribute("is-two-columns_") == null) {
+            isOneColumn = true
+        }
+
+        if (theaterContainer.hasChildNodes()) {
+            isTheater = true;
+            toggleMode();
+        }
+        ready = true;
+    }
+    if (ready) {
+        return;
+    } else {
+        setTimeout(() => {
+            tryInject(--count);
+        }, 500);
     }
 }
+
+tryInject(20);
