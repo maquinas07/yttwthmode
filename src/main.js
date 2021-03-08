@@ -23,9 +23,16 @@ var hideButton;
 var isLive;
 var isArchive;
 
+var prevScroll = 0;
+
 const reloadPageElems = () => {
     pageManager = document.getElementById("page-manager");
-    pageManagerContainer = document.getElementsByClassName("ytd-page-manager")[0];
+    const pageManagerList = document.getElementsByClassName("ytd-page-manager");
+    for (var i = 0; i < pageManagerList.length; i++) {
+        if (pageManagerList[i].nodeName === "YTD-WATCH-FLEXY") {
+            pageManagerContainer = pageManagerList[i];
+        }
+    }
 
     theaterContainer = document.getElementById("player-theater-container");
 
@@ -33,7 +40,6 @@ const reloadPageElems = () => {
     info = document.getElementById("info");
     related = document.getElementById("related");
     headerNav = document.getElementById("masthead-container");
-    primaryColumn = document.getElementById("primary");
 
     normalComments = document.getElementById("comments");
 }
@@ -42,6 +48,11 @@ const reloadChatElems = () => {
     chat = document.getElementById("chat");
     chatFrame = document.getElementById("chatframe");
     hideButton = document.getElementById("show-hide-button");
+}
+
+const reloadIsLive = () => {
+    isLive = chat || chatFrame;
+    isArchive = isLive && normalComments;
 }
 
 const toggleVideoPlayerStyle = () => {
@@ -54,12 +65,15 @@ const toggleVideoPlayerStyle = () => {
         if (isOneColumn) {
             toggleIsOneColumn();
         }
+        prevScroll = document.documentElement.scrollTop;
+        scroll(0, 0);
     } else {
         document.documentElement.style.overflow = "";
         pageManager.style.marginTop = "";
         theaterContainer.style.width = "";
         theaterContainer.style.height = "";
         theaterContainer.style.maxHeight = "";
+        scroll(0, prevScroll);
     }
 }
 
@@ -91,9 +105,31 @@ const toggleHideElements = () => {
 }
 
 const toggleMode = () => {
-    toggleHideElements();
-    toggleChatFrameStyle();
-    toggleVideoPlayerStyle();
+    reloadChatElems();
+    reloadIsLive();
+    if (isLive) {
+        toggleHideElements();
+        toggleChatFrameStyle();
+        toggleVideoPlayerStyle();
+
+        // Bad (but working) workaround for initialization race condition where the video player would be wider
+        // than the theater container and clip inside the chat.
+        const video = document.getElementsByClassName("video-stream")[0];
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const dirtyWorkaround = () => {
+            if (video.style.width !== `${vw - chatWidth}px`) {
+                window.dispatchEvent(new Event("resize"));
+                setTimeout(() => {
+                    dirtyWorkaround();
+                }, 500);
+            } else {
+                return;
+            }
+        }
+        dirtyWorkaround();
+        return true;
+    }
+    return false;
 }
 
 const toggleIsOneColumn = () => {
@@ -101,7 +137,7 @@ const toggleIsOneColumn = () => {
         `chatFrame.style.maxHeight = calc(100vh - ${window.getComputedStyle(theaterContainer).minHeight})`
         sets calc(-480px + 100vh) to the max-height attribute and it fails to render.
         But even stranger, it works when ran directly from the debug console. */
-
+    const primaryColumn = document.getElementById("primary-inner") ? document.getElementById("primary-inner").parentElement : null;
     if (isTheater && isOneColumn) {
         reloadChatElems();
         theaterContainer.style.width = "100%";
@@ -113,8 +149,10 @@ const toggleIsOneColumn = () => {
         chatFrame.style.right = "";
         chatFrame.style.top = "";
         chatFrame.style.position = "";
-        primaryColumn.style.marginLeft = "0px";
-        primaryColumn.style.paddingRight = "0px";
+        if (primaryColumn) {
+            primaryColumn.style.marginLeft = "0px";
+            primaryColumn.style.paddingRight = "0px";
+        }
         meta.style.display = "none";
         info.style.display = "none";
         hideButton.style.display = "none";
@@ -126,8 +164,10 @@ const toggleIsOneColumn = () => {
         toggleChatFrameStyle();
         chat.style.marginTop = "";
         chat.style.height = "";
-        primaryColumn.style.marginLeft = "";
-        primaryColumn.style.paddingRight = "";
+        if (primaryColumn) {
+            primaryColumn.style.marginLeft = "";
+            primaryColumn.style.paddingRight = "";
+        }
         meta.style.display = "";
         info.style.display = "";
         hideButton.style.display = "";
@@ -153,6 +193,18 @@ const handleTheaterMode = (mutationsList) => {
                 chatFrame.style.zIndex = "";
                 toggleVideoPlayerStyle();
             }
+        } else if (mutation.attributeName === "hidden") {
+            var ready;
+            const tryToggle = (count) => {
+                ready = toggleMode();
+                if (count < 1 || ready) {
+                    return;
+                }
+                setTimeout(() => {
+                    tryToggle(--count);
+                }, 500);
+            }
+            tryToggle(20);
         }
     }
 }
@@ -161,13 +213,11 @@ const tryInject = (count) => {
     if (count < 1) {
         return;
     }
+
     reloadPageElems();
-    reloadChatElems();
-    isLive = chat || chatFrame;
-    isArchive = isLive && normalComments;
 
     var ready;
-    if (isLive && theaterContainer && pageManagerContainer) {
+    if (theaterContainer && pageManagerContainer) {
         const theaterToggleObserver = new MutationObserver(handleTheaterMode);
         theaterToggleObserver.observe(pageManagerContainer, { attributes: true });
 
@@ -178,33 +228,15 @@ const tryInject = (count) => {
         if (theaterContainer.hasChildNodes()) {
             isTheater = true;
             toggleMode();
-
-            // Bad (but working) workaround for initialization race condition where the video player would be wider
-            // than the theater container and clip inside the chat.
-            const video = document.getElementsByClassName("video-stream")[0];
-            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-            const dirtyWorkaround = () => {
-                if (video.style.width !== `${vw - chatWidth}px`) {
-                    window.dispatchEvent(new Event("resize"));
-                    setTimeout(() => {
-                        dirtyWorkaround();
-                    }, 500);
-                } else {
-                    return;
-                }
-            }
-            dirtyWorkaround();
         }
         ready = true;
     }
     if (ready) {
         return;
-    } else {
-        setTimeout(() => {
-            tryInject(--count);
-        }, 500);
     }
+    setTimeout(() => {
+        tryInject(--count);
+    }, 500);
 }
-
 
 tryInject(20);
