@@ -145,6 +145,14 @@ const handleTheaterMode = (mutationsList) => {
         } else if (mutation.attributeName === "is-two-columns_") {
             isOneColumn = !isOneColumn;
             toggleIsOneColumn();
+        } else if (mutation.attributeName === "fullscreen") {
+            if (mutation.target.getAttribute("fullscreen") != null) {
+                chatFrame.style.zIndex = -1;
+                theaterContainer.style.width = "100%";
+            } else {
+                chatFrame.style.zIndex = "";
+                toggleVideoPlayerStyle();
+            }
         }
     }
 }
