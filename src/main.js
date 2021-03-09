@@ -193,7 +193,7 @@ const handleTheaterMode = (mutationsList) => {
                 chatFrame.style.zIndex = "";
                 toggleVideoPlayerStyle();
             }
-        } else if (mutation.attributeName === "hidden") {
+        } else if (mutation.attributeName === "hidden" || mutation.attributeName === "video-id") {
             var ready;
             const tryToggle = (count) => {
                 ready = toggleMode();
