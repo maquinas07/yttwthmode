@@ -93,6 +93,9 @@ const toggleVideoPlayerStyle = () => {
 const toggleChatFrameStyle = () => {
     reloadChatElems();
     if (isTheater && isLive && !isChatDisabled) {
+        if (chat.getAttribute("collapsed") !== null) {
+            hideButton.querySelector("#button").click();
+        }
         chatFrame.style.width = `${chatWidth}px`;
         chatFrame.style.height = "100vh";
         chatFrame.style.position = "absolute";
