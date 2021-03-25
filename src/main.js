@@ -19,6 +19,7 @@ var isOneColumn = false;
 var chat;
 var chatFrame;
 var hideButton;
+var isChatDisabled;
 
 var isLive;
 var isArchive;
@@ -48,6 +49,12 @@ const reloadChatElems = () => {
     chat = document.getElementById("chat");
     chatFrame = document.getElementById("chatframe");
     hideButton = document.getElementById("show-hide-button");
+
+    if (chatFrame && hideButton && hideButton.childElementCount === 0) {
+        isChatDisabled = true;
+    } else {
+        isChatDisabled = false;
+    }
 }
 
 const reloadIsLive = () => {
@@ -56,10 +63,14 @@ const reloadIsLive = () => {
 }
 
 const toggleVideoPlayerStyle = () => {
-    if (isTheater) {
+    if (isTheater && isLive) {
         document.documentElement.style.overflow = "hidden";
         pageManager.style.marginTop = "0px";
-        theaterContainer.style.width = `calc(100% - ${chatWidth}px)`;
+        if (isChatDisabled) {
+            theaterContainer.style.width = "100%";
+        } else {
+            theaterContainer.style.width = `calc(100% - ${chatWidth}px)`;
+        }
         theaterContainer.style.height = "100vh";
         theaterContainer.style.maxHeight = "none";
         if (isOneColumn) {
@@ -73,13 +84,18 @@ const toggleVideoPlayerStyle = () => {
         theaterContainer.style.width = "";
         theaterContainer.style.height = "";
         theaterContainer.style.maxHeight = "";
-        scroll(0, prevScroll);
+        if (isLive) {
+            scroll(0, prevScroll);
+        }
     }
 }
 
 const toggleChatFrameStyle = () => {
     reloadChatElems();
-    if (isTheater) {
+    if (isTheater && isLive && !isChatDisabled) {
+        if (chat.getAttribute("collapsed") !== null) {
+            hideButton.querySelector("#button").click();
+        }
         chatFrame.style.width = `${chatWidth}px`;
         chatFrame.style.height = "100vh";
         chatFrame.style.position = "absolute";
@@ -95,7 +111,7 @@ const toggleChatFrameStyle = () => {
 }
 
 const toggleHideElements = () => {
-    if (isTheater) {
+    if (isTheater && isLive) {
         related.style.display = "none";
         headerNav.style.display = "none";
     } else {
@@ -128,8 +144,12 @@ const toggleMode = () => {
         }
         dirtyWorkaround();
         return true;
+    } else {
+        toggleHideElements();
+        toggleVideoPlayerStyle();
+
+        return false;
     }
-    return false;
 }
 
 const toggleIsOneColumn = () => {
@@ -142,13 +162,15 @@ const toggleIsOneColumn = () => {
         reloadChatElems();
         theaterContainer.style.width = "100%";
         theaterContainer.style.height = "";
-        chat.style.marginTop = "0px";
-        chat.style.height = `calc(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw)`;
-        chatFrame.style.width = "100%";
-        chatFrame.style.height = `max(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw, 100vh - ${window.getComputedStyle(theaterContainer).minHeight})`;
-        chatFrame.style.right = "";
-        chatFrame.style.top = "";
-        chatFrame.style.position = "";
+        if (!isChatDisabled) {
+            chat.style.marginTop = "0px";
+            chat.style.height = `calc(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw)`;
+            chatFrame.style.width = "100%";
+            chatFrame.style.height = `max(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw, 100vh - ${window.getComputedStyle(theaterContainer).minHeight})`;
+            chatFrame.style.right = "";
+            chatFrame.style.top = "";
+            chatFrame.style.position = "";
+        }
         if (primaryColumn) {
             primaryColumn.style.marginLeft = "0px";
             primaryColumn.style.paddingRight = "0px";
@@ -195,6 +217,11 @@ const handleTheaterMode = (mutationsList) => {
             }
         } else if (mutation.attributeName === "hidden" || mutation.attributeName === "video-id") {
             var ready;
+
+            isLive = false;
+            chat = null;
+            chatFrame = null;
+
             const tryToggle = (count) => {
                 ready = toggleMode();
                 if (count < 1 || ready) {
@@ -205,6 +232,10 @@ const handleTheaterMode = (mutationsList) => {
                 }, 500);
             }
             tryToggle(20);
+
+            if (!ready) {
+                toggleMode();
+            }
         }
     }
 }
