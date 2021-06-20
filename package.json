@@ -2,9 +2,17 @@
   "author": "Elias Menon",
   "license": "MIT",
   "scripts": {
-    "build": "web-ext build -i package.json yarn.lock -o"
+    "compile-styles": "sass ./src/popup/css/style.scss ./dist/popup/css/style.css",
+    "prepare": "yarn run compile-styles && webpack",
+    "build": "yarn run prepare && web-ext build -i src/ package.json yarn.lock README.md webpack.config.js -o",
+    "test": "yarn run prepare && web-ext run --verbose"
   },
   "devDependencies": {
-    "web-ext": "^5.5.0"
+    "copy-webpack-plugin": "^9.0.0",
+    "sass": "^1.34.1",
+    "web-ext": "^5.5.0",
+    "webextension-polyfill": "^0.8.0",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
   }
 }

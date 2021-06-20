@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings popup</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <span>
+                Hide chat
+            </span>
+            <label class="switch">
+                <input type="checkbox">
+                <span class="slider round"></span>
+            </label>
+        </div>
+        <div class="row">
+            <span>
+                Chat position
+            </span>
+            <label class="switch">
+                <input type="checkbox">
+                <span class="slider lr-toggle"></span>
+            </label>
+        </div>
+        <div class="row">
+            <span>
+                Chat width
+            </span>
+            <input type="number" name="chat-width" id="chat-width-input" min="300">
+        </div>
+        <div class="row">
+            <button class="dirtyable">
+                Save as defaults
+            </button>
+        </div>
+    </div>
+
+    <script src="js/popup.js"></script>
+</body>
+
+</html>

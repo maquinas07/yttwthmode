@@ -1,3 +1,5 @@
+import { browser, properties, initProperties } from "./common/properties";
+
 var pageManager;
 var pageManagerContainer;
 
@@ -7,11 +9,8 @@ var meta;
 var info;
 var related;
 var headerNav;
-var primaryColumn;
 
 var normalComments;
-
-var chatWidth = 400;
 
 var isTheater = false;
 var isOneColumn = false;
@@ -66,13 +65,14 @@ const toggleVideoPlayerStyle = () => {
     if (isTheater && isLive) {
         document.documentElement.style.overflow = "hidden";
         pageManager.style.marginTop = "0px";
-        if (isChatDisabled) {
-            theaterContainer.style.width = "100%";
-        } else {
-            theaterContainer.style.width = `calc(100% - ${chatWidth}px)`;
-        }
+        theaterContainer.style.width = `calc(100% - ${(properties.hideChat || isChatDisabled) ? 0 : properties.chatWidth}px)`;
         theaterContainer.style.height = "100vh";
         theaterContainer.style.maxHeight = "none";
+        if (properties.leftChat) {
+            theaterContainer.style.left = `${(properties.hideChat || isChatDisabled || isOneColumn) ? 0 : properties.chatWidth}px`;
+        } else {
+            theaterContainer.style.left = "";
+        }
         if (isOneColumn) {
             toggleIsOneColumn();
         }
@@ -84,6 +84,7 @@ const toggleVideoPlayerStyle = () => {
         theaterContainer.style.width = "";
         theaterContainer.style.height = "";
         theaterContainer.style.maxHeight = "";
+        theaterContainer.style.left = "";
         if (isLive) {
             scroll(0, prevScroll);
         }
@@ -96,17 +97,31 @@ const toggleChatFrameStyle = () => {
         if (chat.getAttribute("collapsed") !== null) {
             hideButton.querySelector("#button").click();
         }
-        chatFrame.style.width = `${chatWidth}px`;
+        chatFrame.style.width = `${properties.chatWidth}px`;
         chatFrame.style.height = "100vh";
         chatFrame.style.position = "absolute";
-        chatFrame.style.right = "0px";
         chatFrame.style.top = "0px";
+        if (properties.leftChat) {
+            chatFrame.style.left = "0px";
+            chatFrame.style.right = "";
+        } else {
+            chatFrame.style.right = "0px";
+            chatFrame.style.left = "";
+        }
+        if (properties.hideChat) {
+            chatFrame.style.zIndex = -1;
+        } else {
+            chatFrame.style.zIndex = "";
+        }
+        window.dispatchEvent(new Event("resize"));
     } else {
+        chatFrame.style.zIndex = "";
         chatFrame.style.width = "";
         chatFrame.style.height = "";
         chatFrame.style.position = "";
-        chatFrame.style.right = "";
         chatFrame.style.top = "";
+        chatFrame.style.left = "";
+        chatFrame.style.right = "";
     }
 }
 
@@ -133,7 +148,7 @@ const toggleMode = () => {
         const video = document.getElementsByClassName("video-stream")[0];
         const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
         const dirtyWorkaround = () => {
-            if (video.style.width !== `${vw - chatWidth}px`) {
+            if (video.style.width !== `${vw - properties.chatWidth}px` && video.style.width !== vw) {
                 window.dispatchEvent(new Event("resize"));
                 setTimeout(() => {
                     dirtyWorkaround();
@@ -162,7 +177,7 @@ const toggleIsOneColumn = () => {
         reloadChatElems();
         theaterContainer.style.width = "100%";
         theaterContainer.style.height = "";
-        if (!isChatDisabled) {
+        if (!isChatDisabled && !properties.hideChat) {
             chat.style.marginTop = "0px";
             chat.style.height = `calc(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw)`;
             chatFrame.style.width = "100%";
@@ -200,20 +215,26 @@ const toggleIsOneColumn = () => {
 }
 
 const handleTheaterMode = (mutationsList) => {
+    console.log("handling", mutationsList);
     for (const mutation of mutationsList) {
         if (mutation.attributeName === "theater") {
             isTheater = !isTheater;
             toggleMode();
         } else if (mutation.attributeName === "is-two-columns_") {
-            isOneColumn = !isOneColumn;
-            toggleIsOneColumn();
+            if (mutation.target.getAttribute("fullscreen") == null) {
+                isOneColumn = mutation.target.getAttribute("is-two-columns_") == null;
+                toggleIsOneColumn();
+            }
         } else if (mutation.attributeName === "fullscreen") {
             if (mutation.target.getAttribute("fullscreen") != null) {
                 chatFrame.style.zIndex = -1;
+                chat.style.zIndex = -1;
                 theaterContainer.style.width = "100%";
             } else {
                 chatFrame.style.zIndex = "";
                 toggleVideoPlayerStyle();
+                toggleChatFrameStyle();
+                toggleIsOneColumn();
             }
         } else if (mutation.attributeName === "hidden" || mutation.attributeName === "video-id") {
             var ready;
@@ -270,4 +291,37 @@ const tryInject = (count) => {
     }, 500);
 }
 
-tryInject(20);
+initProperties().then(() => {
+    browser.runtime.onMessage.addListener((request) => {
+        if (request.yttw_getTabProperties) {
+            return Promise.resolve({
+                data: {
+                    yttw_chatWidth: properties.chatWidth,
+                    yttw_leftChat: properties.leftChat,
+                    yttw_hideChat: properties.hideChat
+                }
+            });
+        }
+    });
+    
+    browser.runtime.onConnect.addListener((port) => {
+        port.onMessage.addListener((request) => {
+            if (request.yttw_layoutChange) {
+                var changed = false;
+                for (var property in properties) {
+                    if (typeof request[`yttw_${property}`] !== "undefined" && properties[property] !== request[`yttw_${property}`]) {
+                        properties[property] = request[`yttw_${property}`];
+                        changed = true;
+                        break;
+                    }
+                }
+                if (changed) {
+                    toggleVideoPlayerStyle();
+                    toggleChatFrameStyle();
+                    toggleIsOneColumn();
+                }
+            }
+        })
+    });
+    tryInject(20);
+});
