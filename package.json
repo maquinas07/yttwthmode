@@ -3,7 +3,7 @@
   "license": "MIT",
   "scripts": {
     "compile-styles": "sass ./src/popup/css/style.scss ./dist/popup/css/style.css",
-    "prepare": "yarn run compile-styles && webpack",
+    "prepare": "webpack && yarn run compile-styles",
     "build": "yarn run prepare && web-ext build -i src/ package.json yarn.lock README.md webpack.config.js -o",
     "test": "yarn run prepare && web-ext run --verbose"
   },
