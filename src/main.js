@@ -215,7 +215,6 @@ const toggleIsOneColumn = () => {
 }
 
 const handleTheaterMode = (mutationsList) => {
-    console.log("handling", mutationsList);
     for (const mutation of mutationsList) {
         if (mutation.attributeName === "theater") {
             isTheater = !isTheater;
