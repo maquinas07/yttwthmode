@@ -8,7 +8,8 @@ const config = {
   },
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: '[name].js'
+    filename: '[name].js',
+    clean: true
   },
   plugins: [
     new CopyPlugin({
