@@ -281,7 +281,7 @@ const tryInject = (count) => {
         theaterToggleObserver.observe(pageManagerContainer, { attributes: true });
 
         if (pageManagerContainer.getAttribute("is-two-columns_") == null) {
-            isOneColumn = true
+            isOneColumn = true;
         }
 
         if (theaterContainer.hasChildNodes()) {
