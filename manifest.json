@@ -14,10 +14,16 @@
     }
   ],
   "browser_action": {
-    "default_popup": "dist/popup/popup.html"
+    "default_popup": "dist/popup/popup.html",
+    "default_icon": {
+      "128": "dist/img/logo_128.png"
+    }
   },
   "permissions": [
     "storage",
     "tabs"
-  ]
+  ],
+  "icon": {
+    "128": "dist/img/logo_128.png"
+  }
 }
