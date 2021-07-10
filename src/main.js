@@ -24,6 +24,7 @@ var isLive;
 var isArchive;
 
 var prevScroll = 0;
+const headerNavHeight = 56;
 
 const reloadPageElems = () => {
     pageManager = document.getElementById("page-manager");
@@ -64,9 +65,9 @@ const reloadIsLive = () => {
 const toggleVideoPlayerStyle = () => {
     if (isTheater && isLive) {
         document.documentElement.style.overflow = "hidden";
-        pageManager.style.marginTop = "0px";
+        pageManager.style.marginTop = `${properties.headerNav ? headerNavHeight : 0}px`;
         theaterContainer.style.width = `calc(100% - ${(properties.hideChat || isChatDisabled) ? 0 : properties.chatWidth}px)`;
-        theaterContainer.style.height = "100vh";
+        theaterContainer.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
         theaterContainer.style.maxHeight = "none";
         if (properties.leftChat) {
             theaterContainer.style.left = `${(properties.hideChat || isChatDisabled || isOneColumn) ? 0 : properties.chatWidth}px`;
@@ -98,9 +99,9 @@ const toggleChatFrameStyle = () => {
             hideButton.querySelector("#button").click();
         }
         chatFrame.style.width = `${properties.chatWidth}px`;
-        chatFrame.style.height = "100vh";
+        chatFrame.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
         chatFrame.style.position = "absolute";
-        chatFrame.style.top = "0px";
+        chatFrame.style.top = `${properties.headerNav ? headerNavHeight : 0}px`;
         if (properties.leftChat) {
             chatFrame.style.left = "0px";
             chatFrame.style.right = "";
@@ -126,7 +127,7 @@ const toggleChatFrameStyle = () => {
 }
 
 const toggleHideElements = () => {
-    if (isTheater && isLive) {
+    if (isTheater && isLive && !properties.headerNav) {
         related.style.display = "none";
         headerNav.style.display = "none";
     } else {
@@ -171,7 +172,8 @@ const toggleIsOneColumn = () => {
     /* There's strange behavior using calc() in Firefox.
         `chatFrame.style.maxHeight = calc(100vh - ${window.getComputedStyle(theaterContainer).minHeight})`
         sets calc(-480px + 100vh) to the max-height attribute and it fails to render.
-        But even stranger, it works when ran directly from the debug console. */
+        But even stranger, it works when ran directly from the debug console.
+    */
     const primaryColumn = document.getElementById("primary-inner") ? document.getElementById("primary-inner").parentElement : null;
     if (isTheater && isOneColumn) {
         reloadChatElems();
@@ -179,7 +181,12 @@ const toggleIsOneColumn = () => {
         theaterContainer.style.height = "";
         if (!isChatDisabled && !properties.hideChat) {
             chat.style.marginTop = "0px";
-            chat.style.height = `calc(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw)`;
+            chat.style.height = `max(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw, 100vh - ${window.getComputedStyle(theaterContainer).minHeight})`;
+            /*
+                Weird behavior in Firefox (described above) doesn't allow to set this minimum height.
+                This causes chat to overflow down in some screen sizes when YouTube is in one column mode.
+            */
+            // chat.style.minHeight = `max(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw, 100vh - ${window.getComputedStyle(theaterContainer).minHeight})`;
             chatFrame.style.width = "100%";
             chatFrame.style.height = `max(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw, 100vh - ${window.getComputedStyle(theaterContainer).minHeight})`;
             chatFrame.style.right = "";
@@ -222,6 +229,7 @@ const handleTheaterMode = (mutationsList) => {
         } else if (mutation.attributeName === "is-two-columns_") {
             if (mutation.target.getAttribute("fullscreen") == null) {
                 isOneColumn = mutation.target.getAttribute("is-two-columns_") == null;
+                toggleVideoPlayerStyle();
                 toggleIsOneColumn();
             }
         } else if (mutation.attributeName === "fullscreen") {
@@ -293,12 +301,12 @@ const tryInject = (count) => {
 initProperties().then(() => {
     browser.runtime.onMessage.addListener((request) => {
         if (request.yttw_getTabProperties) {
+            var thisProperties = {};
+            for (var property in properties) {
+                thisProperties[`yttw_${property}`] = properties[property];
+            }
             return Promise.resolve({
-                data: {
-                    yttw_chatWidth: properties.chatWidth,
-                    yttw_leftChat: properties.leftChat,
-                    yttw_hideChat: properties.hideChat
-                }
+                data: thisProperties
             });
         }
     });
@@ -315,6 +323,7 @@ initProperties().then(() => {
                     }
                 }
                 if (changed) {
+                    toggleHideElements();
                     toggleVideoPlayerStyle();
                     toggleChatFrameStyle();
                     toggleIsOneColumn();
