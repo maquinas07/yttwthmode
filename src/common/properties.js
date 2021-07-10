@@ -3,7 +3,8 @@ export var browser = require("webextension-polyfill");
 export var properties = {
     chatWidth: 400,
     hideChat: false,
-    leftChat: false
+    leftChat: false,
+    headerNav: false
 }
 
 export function initProperties() {

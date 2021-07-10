@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "yttwthmode",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Twitch-like theater mode for Youtube livestreams and archives.",
   "content_scripts": [
     {
@@ -14,10 +14,16 @@
     }
   ],
   "browser_action": {
-    "default_popup": "dist/popup/popup.html"
+    "default_popup": "dist/popup/popup.html",
+    "default_icon": {
+      "128": "dist/img/logo_128.png"
+    }
   },
   "permissions": [
     "storage",
     "tabs"
-  ]
+  ],
+  "icon": {
+    "128": "dist/img/logo_128.png"
+  }
 }

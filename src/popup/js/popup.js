@@ -1,8 +1,9 @@
 import { browser, properties, initProperties } from "../../common/properties";
 
 const switches = document.getElementsByClassName("switch");
-const hideChatSwitch = switches[0].childNodes[1];
-const chatPositionSwitch = switches[1].childNodes[1];
+const headerNavSwitch = switches[0].childNodes[1];
+const hideChatSwitch = switches[1].childNodes[1];
+const chatPositionSwitch = switches[2].childNodes[1];
 const chatWidthInput = document.getElementById("chat-width-input");
 const saveAsDefaultsButton = document.getElementsByClassName("dirtyable")[0];
 
@@ -48,6 +49,11 @@ function sendPropertiesChangeToContentScript(property) {
     handleDirty(property);
 }
 
+function toggleHeaderNav() {
+    properties.headerNav = !properties.headerNav;
+    sendPropertiesChangeToContentScript("headerNav");
+}
+
 function toggleHideChat() {
     properties.hideChat = !properties.hideChat;
     sendPropertiesChangeToContentScript("hideChat");
@@ -76,12 +82,15 @@ function saveAsDefaults() {
 function setValues() {
     switches[0].childNodes[3].classList.add("notransition");
     switches[1].childNodes[3].classList.add("notransition");
+    switches[2].childNodes[3].classList.add("notransition");
+    headerNavSwitch.checked = properties.headerNav;
     hideChatSwitch.checked = properties.hideChat;
     chatPositionSwitch.checked = !properties.leftChat;
     chatWidthInput.value = properties.chatWidth;
     hideChatSwitch.offsetHeight;
     switches[0].childNodes[3].classList.remove("notransition");
     switches[1].childNodes[3].classList.remove("notransition");
+    switches[2].childNodes[3].classList.remove("notransition");
 }
 
 function getActiveTab() {
@@ -124,6 +133,7 @@ initProperties().then(() => {
         });
     });
     connectToContentScript().then(() => {
+        headerNavSwitch.addEventListener("click", toggleHeaderNav);
         hideChatSwitch.addEventListener("click", toggleHideChat);
         chatPositionSwitch.addEventListener("click", toggleChatPosition);
         chatWidthInput.onchange = handleChatWidthInput;
