@@ -92,37 +92,40 @@ const toggleVideoPlayerStyle = () => {
     }
 }
 
-const toggleChatFrameStyle = () => {
+const toggleChatFrameStyle = (chatElem) => {
     reloadChatElems();
     if (isTheater && isLive && !isChatDisabled) {
         if (chat.getAttribute("collapsed") !== null) {
             hideButton.querySelector("#button").click();
         }
-        chatFrame.style.width = `${properties.chatWidth}px`;
-        chatFrame.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
-        chatFrame.style.position = "absolute";
-        chatFrame.style.top = `${properties.headerNav ? headerNavHeight : 0}px`;
+        hideButton.style.display = "none";
+        chatElem.style.width = `${properties.chatWidth}px`;
+        chatElem.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
+        chatElem.style.position = "absolute";
+        chatElem.style.top = `${properties.headerNav ? headerNavHeight : 0}px`;
+        
         if (properties.leftChat) {
-            chatFrame.style.left = "0px";
-            chatFrame.style.right = "";
+            chatElem.style.left = "0px";
+            chatElem.style.right = "";
         } else {
-            chatFrame.style.right = "0px";
-            chatFrame.style.left = "";
+            chatElem.style.right = "0px";
+            chatElem.style.left = "";
         }
         if (properties.hideChat) {
-            chatFrame.style.zIndex = -1;
+            chatElem.style.zIndex = -1;
         } else {
-            chatFrame.style.zIndex = "";
+            chatElem.style.zIndex = "";
         }
         window.dispatchEvent(new Event("resize"));
     } else {
-        chatFrame.style.zIndex = "";
-        chatFrame.style.width = "";
-        chatFrame.style.height = "";
-        chatFrame.style.position = "";
-        chatFrame.style.top = "";
-        chatFrame.style.left = "";
-        chatFrame.style.right = "";
+        chatElem.style.zIndex = "";
+        chatElem.style.width = "";
+        chatElem.style.height = "";
+        chatElem.style.position = "";
+        chatElem.style.top = "";
+        chatElem.style.left = "";
+        chatElem.style.right = "";
+        hideButton.style.display = "";
     }
 }
 
@@ -141,7 +144,8 @@ const toggleMode = () => {
     reloadIsLive();
     if (isLive) {
         toggleHideElements();
-        toggleChatFrameStyle();
+        toggleChatFrameStyle(chat);
+        toggleChatFrameStyle(chatFrame);
         toggleVideoPlayerStyle();
 
         // Bad (but working) workaround for initialization race condition where the video player would be wider
@@ -205,7 +209,8 @@ const toggleIsOneColumn = () => {
         }
     } else {
         toggleVideoPlayerStyle();
-        toggleChatFrameStyle();
+        toggleChatFrameStyle(chat);
+        toggleChatFrameStyle(chatFrame);
         chat.style.marginTop = "";
         chat.style.height = "";
         if (primaryColumn) {
@@ -240,7 +245,8 @@ const handleTheaterMode = (mutationsList) => {
             } else {
                 chatFrame.style.zIndex = "";
                 toggleVideoPlayerStyle();
-                toggleChatFrameStyle();
+                toggleChatFrameStyle(chat);
+                toggleChatFrameStyle(chatFrame);        
                 toggleIsOneColumn();
             }
         } else if (mutation.attributeName === "hidden" || mutation.attributeName === "video-id") {
@@ -325,7 +331,8 @@ initProperties().then(() => {
                 if (changed) {
                     toggleHideElements();
                     toggleVideoPlayerStyle();
-                    toggleChatFrameStyle();
+                    toggleChatFrameStyle(chat);
+                    toggleChatFrameStyle(chatFrame);            
                     toggleIsOneColumn();
                 }
             }
