@@ -3,9 +3,9 @@
   "license": "MIT",
   "scripts": {
     "compile-styles": "sass ./src/popup/css/style.scss ./dist/popup/css/style.css",
-    "prepare": "webpack && yarn run compile-styles && ncp ./src/img ./dist/img",
-    "build": "yarn run prepare && web-ext build -i src/ package.json yarn.lock README.md webpack.config.js -o",
-    "test": "yarn run prepare && web-ext run --watch-ignored ./node_modules/* --verbose"
+    "prep": "webpack && yarn run compile-styles && ncp ./src/img ./dist/img",
+    "build": "yarn run prep && web-ext build -i src/ package.json yarn.lock README.md webpack.config.js -o",
+    "test": "yarn run prep && web-ext run --watch-ignored ./node_modules/* --verbose"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^9.0.0",
