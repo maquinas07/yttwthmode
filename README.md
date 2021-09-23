@@ -19,7 +19,7 @@ Building requires yarn 1, for instructions on how to install it visit https://cl
 
 With yarn simply run:
 ```
-yarn build
+yarn && yarn build
 ```
 
 The packaged extension will be located in the web-ext-artifacts folder.
