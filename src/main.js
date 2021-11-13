@@ -185,6 +185,10 @@ const toggleIsOneColumn = () => {
         theaterContainer.style.height = "";
         if (!isChatDisabled && !properties.hideChat) {
             chat.style.marginTop = "0px";
+            chat.style.right = "";
+            chat.style.top = "";
+            chat.style.position = "";
+            chat.style.width = "100%";
             chat.style.height = `max(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw, 100vh - ${window.getComputedStyle(theaterContainer).minHeight})`;
             /*
                 Weird behavior in Firefox (described above) doesn't allow to set this minimum height.
