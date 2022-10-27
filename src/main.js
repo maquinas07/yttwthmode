@@ -62,6 +62,9 @@ const reloadChatElems = () => {
 const reloadIsLive = () => {
     isLive = chat || chatFrame;
     isArchive = isLive && normalComments;
+    if (isArchive && !properties.enabledInArchives) {
+        isLive = false
+    }
 }
 
 const toggleVideoPlayerStyle = () => {
@@ -315,12 +318,8 @@ const tryInject = (count) => {
 initProperties().then(() => {
     browser.runtime.onMessage.addListener((request) => {
         if (request.yttw_getTabProperties) {
-            let thisProperties = {};
-            for (let property in properties) {
-                thisProperties[`yttw_${property}`] = properties[property];
-            }
             return Promise.resolve({
-                data: thisProperties
+                data: properties
             });
         }
     });
@@ -329,22 +328,22 @@ initProperties().then(() => {
         port.onMessage.addListener((request) => {
             if (request.yttw_layoutChange) {
                 let changed = false;
-                for (let property in properties) {
-                    if (typeof request[`yttw_${property}`] !== "undefined" && properties[property] !== request[`yttw_${property}`]) {
-                        properties[property] = request[`yttw_${property}`];
-                        changed = true;
-                        break;
-                    }
+                const property = request.property;
+                if (properties[property] !== request[property]) {
+                    properties[property] = request[property];
+                    changed = true;
                 }
                 if (changed) {
+                    reloadIsLive();
                     toggleHideElements();
                     toggleVideoPlayerStyle();
                     toggleChatFrameStyle(chat);
                     toggleChatFrameStyle(chatFrame);            
                     toggleIsOneColumn();
+                    window.dispatchEvent(new Event("resize"));
                 }
             }
-        })
+        });
     });
     tryInject(20);
 });
