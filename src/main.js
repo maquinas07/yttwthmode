@@ -37,7 +37,11 @@ const reloadPageElems = () => {
     }
 
     theaterContainer = document.getElementById("player-theater-container");
-    secondaryColumn = document.getElementById("secondary");
+    for (const node of document.querySelectorAll("#secondary")) {
+        if (node.classList.contains("ytd-watch-flexy")) {
+            secondaryColumn = node;
+        }
+    }
 
     meta = document.getElementById("meta");
     info = document.getElementById("info");
@@ -110,7 +114,7 @@ const toggleChatFrameStyle = (chatElem) => {
         chatElem.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
         chatElem.style.position = "absolute";
         chatElem.style.top = `${properties.headerNav ? headerNavHeight : 0}px`;
-        
+
         if (properties.leftChat) {
             chatElem.style.left = "0px";
             chatElem.style.right = "";
@@ -257,7 +261,7 @@ const handleTheaterMode = (mutationsList) => {
                 chatFrame.style.zIndex = "";
                 toggleVideoPlayerStyle();
                 toggleChatFrameStyle(chat);
-                toggleChatFrameStyle(chatFrame);        
+                toggleChatFrameStyle(chatFrame);
                 toggleIsOneColumn();
             }
         } else if (mutation.attributeName === "hidden" || mutation.attributeName === "video-id") {
@@ -323,7 +327,7 @@ initProperties().then(() => {
             });
         }
     });
-    
+
     browser.runtime.onConnect.addListener((port) => {
         port.onMessage.addListener((request) => {
             if (request.yttw_layoutChange) {
@@ -338,7 +342,7 @@ initProperties().then(() => {
                     toggleHideElements();
                     toggleVideoPlayerStyle();
                     toggleChatFrameStyle(chat);
-                    toggleChatFrameStyle(chatFrame);            
+                    toggleChatFrameStyle(chatFrame);
                     toggleIsOneColumn();
                     window.dispatchEvent(new Event("resize"));
                 }
