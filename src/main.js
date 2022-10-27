@@ -1,41 +1,43 @@
 import { browser, properties, initProperties } from "./common/properties";
 
-var pageManager;
-var pageManagerContainer;
+let pageManager;
+let pageManagerContainer;
 
-var theaterContainer;
+let theaterContainer;
+let secondaryColumn;
 
-var meta;
-var info;
-var related;
-var headerNav;
+let meta;
+let info;
+let related;
+let headerNav;
 
-var normalComments;
+let normalComments;
 
-var isTheater = false;
-var isOneColumn = false;
+let isTheater = false;
+let isOneColumn = false;
 
-var chat;
-var chatFrame;
-var hideButton;
-var isChatDisabled;
+let chat;
+let chatFrame;
+let hideButton;
+let isChatDisabled;
 
-var isLive;
-var isArchive;
+let isLive;
+let isArchive;
 
-var prevScroll = 0;
+let prevScroll = 0;
 const headerNavHeight = 56;
 
 const reloadPageElems = () => {
     pageManager = document.getElementById("page-manager");
     const pageManagerList = document.getElementsByClassName("ytd-page-manager");
-    for (var i = 0; i < pageManagerList.length; i++) {
+    for (let i = 0; i < pageManagerList.length; i++) {
         if (pageManagerList[i].nodeName === "YTD-WATCH-FLEXY") {
             pageManagerContainer = pageManagerList[i];
         }
     }
 
     theaterContainer = document.getElementById("player-theater-container");
+    secondaryColumn = document.getElementById("secondary");
 
     meta = document.getElementById("meta");
     info = document.getElementById("info");
@@ -66,6 +68,7 @@ const toggleVideoPlayerStyle = () => {
     if (isTheater && isLive) {
         document.documentElement.style.overflow = "hidden";
         pageManager.style.marginTop = `${properties.headerNav ? headerNavHeight : 0}px`;
+        secondaryColumn.style.position = "static";
         theaterContainer.style.width = `calc(100% - ${(properties.hideChat || isChatDisabled) ? 0 : properties.chatWidth}px)`;
         theaterContainer.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
         theaterContainer.style.maxHeight = "none";
@@ -82,6 +85,7 @@ const toggleVideoPlayerStyle = () => {
     } else {
         document.documentElement.style.overflow = "";
         pageManager.style.marginTop = "";
+        secondaryColumn.style.position = "";
         theaterContainer.style.width = "";
         theaterContainer.style.height = "";
         theaterContainer.style.maxHeight = "";
@@ -254,7 +258,7 @@ const handleTheaterMode = (mutationsList) => {
                 toggleIsOneColumn();
             }
         } else if (mutation.attributeName === "hidden" || mutation.attributeName === "video-id") {
-            var ready;
+            let ready;
 
             isLive = false;
             chat = null;
@@ -285,7 +289,7 @@ const tryInject = (count) => {
 
     reloadPageElems();
 
-    var ready;
+    let ready;
     if (theaterContainer && pageManagerContainer) {
         const theaterToggleObserver = new MutationObserver(handleTheaterMode);
         theaterToggleObserver.observe(pageManagerContainer, { attributes: true });
@@ -311,8 +315,8 @@ const tryInject = (count) => {
 initProperties().then(() => {
     browser.runtime.onMessage.addListener((request) => {
         if (request.yttw_getTabProperties) {
-            var thisProperties = {};
-            for (var property in properties) {
+            let thisProperties = {};
+            for (let property in properties) {
                 thisProperties[`yttw_${property}`] = properties[property];
             }
             return Promise.resolve({
@@ -324,8 +328,8 @@ initProperties().then(() => {
     browser.runtime.onConnect.addListener((port) => {
         port.onMessage.addListener((request) => {
             if (request.yttw_layoutChange) {
-                var changed = false;
-                for (var property in properties) {
+                let changed = false;
+                for (let property in properties) {
                     if (typeof request[`yttw_${property}`] !== "undefined" && properties[property] !== request[`yttw_${property}`]) {
                         properties[property] = request[`yttw_${property}`];
                         changed = true;
