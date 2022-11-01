@@ -57,7 +57,7 @@ const reloadChatElems = () => {
 const reloadIsLive = () => {
     isLive = chat || chatFrame;
     isArchive = isLive && normalComments;
-    if (isArchive && !properties.enabledInArchives) {
+    if (isArchive && normalComments.getAttribute("hidden") === null && !properties.enabledInArchives) {
         isLive = false
     }
 }
