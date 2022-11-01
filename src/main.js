@@ -102,7 +102,9 @@ const toggleChatFrameStyle = (chatElem) => {
         chatElem.style.width = `${properties.chatWidth}px`;
         chatElem.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
         chatElem.style.position = "absolute";
-        chatElem.style.top = `${properties.headerNav ? headerNavHeight : 0}px`;
+        if (chatElem !== chatFrame) {
+            chatElem.style.top = `${properties.headerNav ? headerNavHeight : 0}px`;
+        }
 
         if (properties.leftChat) {
             chatElem.style.left = "0px";
