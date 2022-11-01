@@ -29,19 +29,10 @@ const headerNavHeight = 56;
 
 const reloadPageElems = () => {
     pageManager = document.getElementById("page-manager");
-    const pageManagerList = document.getElementsByClassName("ytd-page-manager");
-    for (let i = 0; i < pageManagerList.length; i++) {
-        if (pageManagerList[i].nodeName === "YTD-WATCH-FLEXY") {
-            pageManagerContainer = pageManagerList[i];
-        }
-    }
+    pageManagerContainer = document.querySelector("ytd-watch-flexy.ytd-page-manager");
 
     theaterContainer = document.getElementById("player-theater-container");
-    for (const node of document.querySelectorAll("#secondary")) {
-        if (node.classList.contains("ytd-watch-flexy")) {
-            secondaryColumn = node;
-        }
-    }
+    secondaryColumn = document.querySelector("#secondary.ytd-watch-flexy");
 
     meta = document.getElementById("meta");
     info = document.getElementById("info");
@@ -106,9 +97,7 @@ const toggleVideoPlayerStyle = () => {
 const toggleChatFrameStyle = (chatElem) => {
     reloadChatElems();
     if (isTheater && isLive && !isChatDisabled) {
-        if (chat.getAttribute("collapsed") !== null) {
-            hideButton.querySelector("#button").click();
-        }
+        chat.removeAttribute("collapsed");
         hideButton.style.display = "none";
         chatElem.style.width = `${properties.chatWidth}px`;
         chatElem.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
