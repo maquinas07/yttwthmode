@@ -45,9 +45,9 @@ const reloadPageElems = () => {
 const reloadChatElems = () => {
     chat = document.getElementById("chat");
     chatFrame = document.getElementById("chatframe");
-    hideButton = document.getElementById("show-hide-button");
+    hideButton = document.querySelector("#show-hide-button");
 
-    if (chatFrame && hideButton && hideButton.childElementCount === 0) {
+    if (chatFrame && !hideButton.querySelector("button")) {
         isChatDisabled = true;
     } else {
         isChatDisabled = false;
@@ -57,7 +57,7 @@ const reloadChatElems = () => {
 const reloadIsLive = () => {
     isLive = chat || chatFrame;
     isArchive = isLive && normalComments;
-    if (isArchive && normalComments.getAttribute("hidden") === null && !properties.enabledInArchives) {
+    if (isChatDisabled || (isArchive && normalComments.getAttribute("hidden") === null && !properties.enabledInArchives)) {
         isLive = false
     }
 }
@@ -96,9 +96,9 @@ const toggleVideoPlayerStyle = () => {
 
 const toggleChatFrameStyle = (chatElem) => {
     reloadChatElems();
-    if (isTheater && isLive && !isChatDisabled) {
-        chat.removeAttribute("collapsed");
+    if (isTheater && isLive) {
         hideButton.style.display = "none";
+        chat.removeAttribute("collapsed");
         chatElem.style.width = `${properties.chatWidth}px`;
         chatElem.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
         chatElem.style.position = "absolute";
@@ -181,24 +181,25 @@ const toggleIsOneColumn = () => {
         But even stranger, it works when ran directly from the debug console.
     */
     const primaryColumn = document.getElementById("primary-inner") ? document.getElementById("primary-inner").parentElement : null;
-    if (isTheater && isOneColumn) {
+    if (isTheater && isLive && isOneColumn) {
         reloadChatElems();
         theaterContainer.style.width = "100%";
         theaterContainer.style.height = "";
-        if (!isChatDisabled && !properties.hideChat) {
+        if (!properties.hideChat) {
+            hideButton.style.display = "none";
             chat.style.marginTop = "0px";
             chat.style.right = "";
             chat.style.top = "";
             chat.style.position = "";
             chat.style.width = "100%";
-            chat.style.height = `max(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw, 100vh - ${window.getComputedStyle(theaterContainer).minHeight})`;
+            chat.style.height = `min(100vh - var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio) * 100vw - ${properties.headerNav ? headerNavHeight : 0}px, 100vh - ${window.getComputedStyle(theaterContainer).minHeight} - ${properties.headerNav ? headerNavHeight : 0}px)`;
             /*
                 Weird behavior in Firefox (described above) doesn't allow to set this minimum height.
                 This causes chat to overflow down in some screen sizes when YouTube is in one column mode.
             */
             // chat.style.minHeight = `max(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw, 100vh - ${window.getComputedStyle(theaterContainer).minHeight})`;
             chatFrame.style.width = "100%";
-            chatFrame.style.height = `max(100vh - ((var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio)) * 100vw, 100vh - ${window.getComputedStyle(theaterContainer).minHeight})`;
+            chatFrame.style.height = `100%`;
             chatFrame.style.right = "";
             chatFrame.style.top = "";
             chatFrame.style.position = "";
@@ -209,23 +210,21 @@ const toggleIsOneColumn = () => {
         }
         meta.style.display = "none";
         info.style.display = "none";
-        hideButton.style.display = "none";
         if (isArchive) {
             normalComments.style.display = "none";
         }
     } else {
+        chat.style.marginTop = "";
+        chat.style.height = "";
         toggleVideoPlayerStyle();
         toggleChatFrameStyle(chat);
         toggleChatFrameStyle(chatFrame);
-        chat.style.marginTop = "";
-        chat.style.height = "";
         if (primaryColumn) {
             primaryColumn.style.marginLeft = "";
             primaryColumn.style.paddingRight = "";
         }
         meta.style.display = "";
         info.style.display = "";
-        hideButton.style.display = "";
         if (isArchive) {
             normalComments.style.display = "";
         }
@@ -238,8 +237,8 @@ const handleTheaterMode = (mutationsList) => {
             isTheater = !isTheater;
             toggleMode();
         } else if (mutation.attributeName === "is-two-columns_") {
+            isOneColumn = mutation.target.getAttribute("is-two-columns_") == null;
             if (mutation.target.getAttribute("fullscreen") == null) {
-                isOneColumn = mutation.target.getAttribute("is-two-columns_") == null;
                 toggleVideoPlayerStyle();
                 toggleIsOneColumn();
             }
@@ -248,8 +247,13 @@ const handleTheaterMode = (mutationsList) => {
                 chatFrame.style.zIndex = -1;
                 chat.style.zIndex = -1;
                 theaterContainer.style.width = "100%";
+                theaterContainer.style.height = "100vh";
+                pageManager.style.marginTop = "";
             } else {
+                chat.style.zIndex = "";
                 chatFrame.style.zIndex = "";
+                reloadIsLive();
+                toggleHideElements();
                 toggleVideoPlayerStyle();
                 toggleChatFrameStyle(chat);
                 toggleChatFrameStyle(chatFrame);
