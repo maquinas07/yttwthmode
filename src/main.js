@@ -300,7 +300,7 @@ const tryInject = (count) => {
             isOneColumn = true;
         }
 
-        if (theaterContainer.hasChildNodes()) {
+        if (pageManagerContainer.getAttribute("theater") != null) {
             isTheater = true;
             toggleMode();
         }
