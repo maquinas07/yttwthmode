@@ -31,7 +31,7 @@ const reloadPageElems = () => {
     pageManager = document.getElementById("page-manager");
     pageManagerContainer = document.querySelector("ytd-watch-flexy.ytd-page-manager");
 
-    theaterContainer = document.getElementById("player-theater-container");
+    theaterContainer = document.getElementById("player-wide-container");
     secondaryColumn = document.querySelector("#secondary.ytd-watch-flexy");
 
     meta = document.getElementById("meta");
