@@ -28,6 +28,8 @@ let prevScroll = 0;
 const headerNavHeight = 56;
 
 const reloadPageElems = () => {
+    console.log("[yttwthmode] reloading page elements");
+
     pageManager = document.getElementById("page-manager");
     pageManagerContainer = document.querySelector("ytd-watch-flexy.ytd-page-manager");
 
@@ -290,6 +292,7 @@ const handleTheaterMode = (mutationsList) => {
 }
 
 const tryInject = (count) => {
+    console.log("[yttwthmode] trying to inject player observer - remaining tries: ", count);
     if (count < 1) {
         return;
     }
@@ -311,6 +314,7 @@ const tryInject = (count) => {
         }
         ready = true;
     }
+    console.log("[yttwthmode] player observer injected");
     if (ready) {
         return;
     }
