@@ -31,7 +31,12 @@ const reloadPageElems = () => {
     pageManager = document.getElementById("page-manager");
     pageManagerContainer = document.querySelector("ytd-watch-flexy.ytd-page-manager");
 
-    theaterContainer = document.getElementById("player-wide-container");
+    if (!pageManagerContainer) {
+        return
+    }
+    // Get the first descendant of the pageManagerContainer whose ID looks like player-*-container
+    theaterContainer = pageManagerContainer.querySelector('[id^="player-"][id$="-container"]:not(#player-container)');
+
     secondaryColumn = document.querySelector("#secondary.ytd-watch-flexy");
 
     meta = document.getElementById("meta");
