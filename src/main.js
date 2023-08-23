@@ -36,8 +36,12 @@ const reloadPageElems = () => {
     if (!pageManagerContainer) {
         return
     }
+
     // Get the first descendant of the pageManagerContainer whose ID looks like player-*-container
     theaterContainer = pageManagerContainer.querySelector('[id^="player-"][id$="-container"]:not(#player-container)');
+
+    // Search for a direct child of pageManagerContainer
+    theaterContainer = theaterContainer.closest('ytd-watch-flexy.ytd-page-manager > *');
 
     secondaryColumn = document.querySelector("#secondary.ytd-watch-flexy");
 
