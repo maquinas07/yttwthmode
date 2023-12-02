@@ -4,6 +4,7 @@ let pageManager;
 let pageManagerContainer;
 
 let theaterContainer;
+let playerContainer;
 let secondaryColumn;
 
 let meta;
@@ -16,6 +17,7 @@ let normalComments;
 let isTheater = false;
 let isOneColumn = false;
 
+let chatContainer;
 let chat;
 let chatFrame;
 let hideButton;
@@ -39,6 +41,7 @@ const reloadPageElems = () => {
 
     // Get the first descendant of the pageManagerContainer whose ID looks like player-*-container
     theaterContainer = pageManagerContainer.querySelector('[id^="player-"][id$="-container"]:not(#player-container)');
+    playerContainer = theaterContainer;
 
     // Search for a direct child of pageManagerContainer
     theaterContainer = theaterContainer.closest('ytd-watch-flexy.ytd-page-manager > *');
@@ -54,6 +57,7 @@ const reloadPageElems = () => {
 }
 
 const reloadChatElems = () => {
+    chatContainer = document.getElementById("chat-container");
     chat = document.getElementById("chat");
     chatFrame = document.getElementById("chatframe");
     hideButton = document.querySelector("#show-hide-button");
@@ -81,6 +85,9 @@ const toggleVideoPlayerStyle = () => {
         theaterContainer.style.width = `calc(100% - ${(properties.hideChat || isChatDisabled) ? 0 : properties.chatWidth}px)`;
         theaterContainer.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
         theaterContainer.style.maxHeight = "none";
+        if (playerContainer) {
+            playerContainer.style.position = "unset";
+        }
         if (properties.leftChat) {
             theaterContainer.style.left = `${(properties.hideChat || isChatDisabled || isOneColumn) ? 0 : properties.chatWidth}px`;
         } else {
@@ -99,21 +106,25 @@ const toggleVideoPlayerStyle = () => {
         theaterContainer.style.height = "";
         theaterContainer.style.maxHeight = "";
         theaterContainer.style.left = "";
+        if (playerContainer) {
+            playerContainer.style.position = "";
+        }
         if (isLive) {
             scroll(0, prevScroll);
         }
     }
 }
 
-const toggleChatFrameStyle = (chatElem) => {
-    reloadChatElems();
+const toggleChatFrameStyle = (chatElem, overrideTop) => {
     if (isTheater && isLive) {
         hideButton.style.display = "none";
         chat.removeAttribute("collapsed");
         chatElem.style.width = `${properties.chatWidth}px`;
         chatElem.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
         chatElem.style.position = "absolute";
-        if (chatElem !== chatFrame) {
+        if (overrideTop) {
+            chatElem.style.top = overrideTop;
+        } else {
             chatElem.style.top = `${properties.headerNav ? headerNavHeight : 0}px`;
         }
 
@@ -142,6 +153,17 @@ const toggleChatFrameStyle = (chatElem) => {
     }
 }
 
+const toggleChatStyle = () => {
+    reloadChatElems();
+    if (chatContainer) {
+        toggleChatFrameStyle(chatContainer);
+        toggleChatFrameStyle(chat, "0px");
+    } else {
+        toggleChatFrameStyle(chat);
+        toggleChatFrameStyle(chatFrame, "");
+    }
+}
+
 const toggleHideElements = () => {
     if (isTheater && isLive && !properties.headerNav) {
         related.style.display = "none";
@@ -157,8 +179,7 @@ const toggleMode = () => {
     reloadIsLive();
     if (isLive) {
         toggleHideElements();
-        toggleChatFrameStyle(chat);
-        toggleChatFrameStyle(chatFrame);
+        toggleChatStyle();
         toggleVideoPlayerStyle();
 
         // Bad (but working) workaround for initialization race condition where the video player would be wider
@@ -228,8 +249,7 @@ const toggleIsOneColumn = () => {
         chat.style.marginTop = "";
         chat.style.height = "";
         toggleVideoPlayerStyle();
-        toggleChatFrameStyle(chat);
-        toggleChatFrameStyle(chatFrame);
+        toggleChatStyle();
         if (primaryColumn) {
             primaryColumn.style.marginLeft = "";
             primaryColumn.style.paddingRight = "";
@@ -266,8 +286,7 @@ const handleTheaterMode = (mutationsList) => {
                 reloadIsLive();
                 toggleHideElements();
                 toggleVideoPlayerStyle();
-                toggleChatFrameStyle(chat);
-                toggleChatFrameStyle(chatFrame);
+                toggleChatStyle();
                 toggleIsOneColumn();
             }
         } else if (mutation.attributeName === "hidden" || mutation.attributeName === "video-id") {
@@ -349,8 +368,7 @@ initProperties().then(() => {
                     reloadIsLive();
                     toggleHideElements();
                     toggleVideoPlayerStyle();
-                    toggleChatFrameStyle(chat);
-                    toggleChatFrameStyle(chatFrame);
+                    toggleChatStyle();
                     toggleIsOneColumn();
                     window.dispatchEvent(new Event("resize"));
                 }
