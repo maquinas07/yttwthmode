@@ -25,5 +25,10 @@
   ],
   "icons": {
     "128": "dist/img/logo_128.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{ec1cc669-f6b7-4455-b288-bca14f840bf2}"
+    }
   }
 }
