@@ -17,7 +17,8 @@ const config = {
         { from: "./src/popup/popup.html", to: "popup" },
       ],
     }),
-  ]
+  ],
+  mode: "production"
 };
 
 module.exports = config;
