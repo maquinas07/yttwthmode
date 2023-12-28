@@ -222,8 +222,8 @@ const toggleIsOneColumn = () => {
             chat.style.marginTop = "0px";
             chat.style.right = "";
             chat.style.top = "";
-            chat.style.position = "";
-            chat.style.width = "100%";
+            chat.style.position = "unset";
+            chat.style.width = "100vw";
             chat.style.height = `min(100vh - var(--ytd-watch-flexy-height-ratio) / var(--ytd-watch-flexy-width-ratio) * 100vw - ${properties.headerNav ? headerNavHeight : 0}px, 100vh - ${window.getComputedStyle(theaterContainer).minHeight} - ${properties.headerNav ? headerNavHeight : 0}px)`;
             /*
                 Weird behavior in Firefox (described above) doesn't allow to set this minimum height.
@@ -235,6 +235,13 @@ const toggleIsOneColumn = () => {
             chatFrame.style.right = "";
             chatFrame.style.top = "";
             chatFrame.style.position = "";
+
+            chatContainer.style.width = "";
+            chatContainer.style.height = "";
+            chatContainer.style.position = "";
+            chatContainer.style.right = "";
+            chatContainer.style.top = "";
+            chatContainer.style.zIndex = "99";
         }
         if (primaryColumn) {
             primaryColumn.style.marginLeft = "0px";
@@ -248,6 +255,7 @@ const toggleIsOneColumn = () => {
     } else {
         chat.style.marginTop = "";
         chat.style.height = "";
+        chatContainer.style.zIndex = "";
         toggleVideoPlayerStyle();
         toggleChatStyle();
         if (primaryColumn) {
@@ -337,8 +345,9 @@ const tryInject = (count) => {
         }
         ready = true;
     }
-    console.log("[yttwthmode] player observer injected");
     if (ready) {
+        console.log("[yttwthmode] player observer injected");
+        console.log(`[yttwthmode] theaterMode ${isTheater ? "enabled" : "disabled"}`);
         return;
     }
     setTimeout(() => {
