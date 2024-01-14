@@ -70,7 +70,7 @@ const reloadChatElems = () => {
 }
 
 const reloadIsLive = () => {
-    isLive = chat || chatFrame;
+    isLive = chat || chatFrame || chatContainer;
     isArchive = isLive && normalComments;
     if (isChatDisabled || (isArchive && normalComments.getAttribute("hidden") === null && !properties.enabledInArchives)) {
         isLive = false
@@ -374,6 +374,7 @@ initProperties().then(() => {
                     changed = true;
                 }
                 if (changed) {
+                    reloadChatElems();
                     reloadIsLive();
                     toggleHideElements();
                     toggleVideoPlayerStyle();
