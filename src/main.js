@@ -30,7 +30,7 @@ let prevScroll = 0;
 const headerNavHeight = 56;
 
 const reloadPageElems = () => {
-    console.log("[yttwthmode] reloading page elements");
+    console.debug("[yttwthmode] reloading page elements");
 
     pageManager = document.getElementById("page-manager");
     pageManagerContainer = document.querySelector("ytd-watch-flexy.ytd-page-manager");
@@ -62,7 +62,7 @@ const reloadChatElems = () => {
     chatFrame = document.getElementById("chatframe");
     hideButton = document.querySelector("#show-hide-button");
 
-    if (chatFrame && !hideButton.querySelector("button")) {
+    if (chatFrame && !hideButton?.querySelector("button")) {
         isChatDisabled = true;
     } else {
         isChatDisabled = false;
@@ -70,10 +70,13 @@ const reloadChatElems = () => {
 }
 
 const reloadIsLive = () => {
-    isLive = chat || chatFrame || chatContainer;
-    isArchive = isLive && normalComments;
+    isLive = !!(chat || chatFrame || chatContainer?.querySelector("#chat"));
+    isArchive = !!(isLive && normalComments);
     if (isChatDisabled || (isArchive && normalComments.getAttribute("hidden") === null && !properties.enabledInArchives)) {
         isLive = false
+    }
+    if (isLive || isArchive) {
+        console.debug(`[yttwthmode] ${isArchive ? "archive" : "live"} detected`);
     }
 }
 
@@ -117,7 +120,9 @@ const toggleVideoPlayerStyle = () => {
 
 const toggleChatFrameStyle = (chatElem, overrideTop) => {
     if (isTheater && isLive) {
-        hideButton.style.display = "none";
+        if (hideButton) {
+            hideButton.style.display = "none";
+        }
         chat.removeAttribute("collapsed");
         chatElem.style.width = `${properties.chatWidth}px`;
         chatElem.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
@@ -149,18 +154,22 @@ const toggleChatFrameStyle = (chatElem, overrideTop) => {
         chatElem.style.top = "";
         chatElem.style.left = "";
         chatElem.style.right = "";
-        hideButton.style.display = "";
+        if (hideButton) {
+            hideButton.style.display = "";
+        }
     }
 }
 
 const toggleChatStyle = () => {
     reloadChatElems();
-    if (chatContainer) {
-        toggleChatFrameStyle(chatContainer);
-        toggleChatFrameStyle(chat, "0px");
-    } else {
-        toggleChatFrameStyle(chat);
-        toggleChatFrameStyle(chatFrame, "");
+    if (chat) {
+        if (chatContainer) {
+            toggleChatFrameStyle(chatContainer);
+            toggleChatFrameStyle(chat, "0px");
+        } else {
+            toggleChatFrameStyle(chat);
+            toggleChatFrameStyle(chatFrame, "");
+        }
     }
 }
 
@@ -187,7 +196,7 @@ const toggleMode = () => {
         const video = document.getElementsByClassName("video-stream")[0];
         const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
         const dirtyWorkaround = () => {
-            if (video.style.width !== `${vw - properties.chatWidth}px` && video.style.width !== vw) {
+            if (video?.style.width !== `${vw - properties.chatWidth}px` && video?.style.width !== vw) {
                 window.dispatchEvent(new Event("resize"));
                 setTimeout(() => {
                     dirtyWorkaround();
@@ -218,7 +227,9 @@ const toggleIsOneColumn = () => {
         theaterContainer.style.width = "100%";
         theaterContainer.style.height = "";
         if (!properties.hideChat) {
-            hideButton.style.display = "none";
+            if (hideButton) {
+                hideButton.style.display = "none";
+            }
             chat.style.marginTop = "0px";
             chat.style.right = "";
             chat.style.top = "";
@@ -266,6 +277,9 @@ const toggleIsOneColumn = () => {
         info.style.display = "";
         if (isArchive) {
             normalComments.style.display = "";
+        }
+        if (hideButton) {
+            hideButton.style.display = "";
         }
     }
 }
@@ -323,7 +337,7 @@ const handleTheaterMode = (mutationsList) => {
 }
 
 const tryInject = (count) => {
-    console.log("[yttwthmode] trying to inject player observer - remaining tries: ", count);
+    console.debug("[yttwthmode] trying to inject player observer - remaining tries: ", count);
     if (count < 1) {
         return;
     }
@@ -346,8 +360,8 @@ const tryInject = (count) => {
         ready = true;
     }
     if (ready) {
-        console.log("[yttwthmode] player observer injected");
-        console.log(`[yttwthmode] theaterMode ${isTheater ? "enabled" : "disabled"}`);
+        console.debug("[yttwthmode] player observer injected");
+        console.debug(`[yttwthmode] theaterMode ${isTheater ? "enabled" : "disabled"}`);
         return;
     }
     setTimeout(() => {
