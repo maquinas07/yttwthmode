@@ -118,12 +118,21 @@ const toggleVideoPlayerStyle = () => {
     }
 }
 
+const showChat = () => {
+    hideButton.querySelector("button")?.click();
+    if (pageManagerContainer.getAttribute("live-chat-present-and-expanded") == null) {
+        setTimeout(() => {
+            showChat();
+        }, 100);
+    }
+}
+
 const toggleChatFrameStyle = (chatElem, overrideTop) => {
     if (isTheater && isLive) {
         if (hideButton) {
+            showChat();
             hideButton.style.display = "none";
         }
-        chat.removeAttribute("collapsed");
         chatElem.style.width = `${properties.chatWidth}px`;
         chatElem.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
         chatElem.style.position = "absolute";
