@@ -15,11 +15,11 @@ Lightweight extension that changes the theater mode in Youtube livestreams and a
 
 ## Build
 
-Building requires yarn 1, for instructions on how to install it visit https://classic.yarnpkg.com/en/docs/install/
+Building requires bun, for instructions on how to install it visit https://bun.sh/docs/installation
 
 With yarn simply run:
 ```
-yarn && yarn build
+bun install && bun run build
 ```
 
 The packaged extension will be located in the web-ext-artifacts folder.
