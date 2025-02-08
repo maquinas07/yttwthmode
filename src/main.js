@@ -120,7 +120,7 @@ const toggleVideoPlayerStyle = () => {
 
 const showChat = () => {
     hideButton.querySelector("button")?.click();
-    if (pageManagerContainer.getAttribute("live-chat-present-and-expanded") == null) {
+    if (pageManagerContainer.getAttribute("live-chat-present-and-expanded")) {
         setTimeout(() => {
             showChat();
         }, 100);
