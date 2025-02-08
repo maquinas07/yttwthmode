@@ -45,7 +45,7 @@ html {
 
   & > * + * {
     margin-left: 1em;
-    align-self: end;
+    align-self: center;
     justify-self: end;
   }
 }
@@ -72,6 +72,7 @@ html {
   -webkit-transition: 300ms;
   transition: 300ms;
   background-color: #ccc;
+  height: 100%;
 
   &::before {
     position: absolute;
