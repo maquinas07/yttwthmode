@@ -56,13 +56,13 @@ const reloadPageElems = () => {
 }
 
 const reloadChatElems = () => {
-    console.debug("[yttwthmode] reloading chat elements");
-
     chatContainer = document.getElementById("chat-container");
     chat = document.getElementById("chat");
     chatFrame = document.getElementById("chatframe");
 
-    if (chat && chat.querySelector("ytd-message-renderer.ytd-live-chat-frame")) {
+    console.debug(`[yttwthmode] reloading chat elements ${(!chat || !chatFrame || !chatContainer) ? ", some were missing" : ""}`);
+
+    if (chat && chat.querySelector("ytd-message-renderer.ytd-live-chat-frame")?.checkVisibility()) {
         isChatDisabled = true;
     } else {
         isChatDisabled = false;
@@ -73,7 +73,7 @@ const reloadIsLive = () => {
     console.debug(`[yttwthmode] updating live state`);
 
     isLive = !!(chat || chatFrame || chatContainer?.querySelector("#chat"));
-    isArchive = !!(isLive && normalComments);
+    isArchive = !!(isLive && normalComments.querySelector("ytd-comments-header-renderer"));
     if (isChatDisabled || (isArchive && normalComments.getAttribute("hidden") === null && !properties.enabledInArchives)) {
         isLive = false
     }
@@ -157,7 +157,6 @@ const toggleChatFrameStyle = (chatElem, overrideTop) => {
 }
 
 const toggleChatStyle = () => {
-    reloadChatElems();
     if (chat) {
         if (chatContainer) {
             toggleChatFrameStyle(chatContainer);
@@ -182,12 +181,14 @@ const toggleHideElements = () => {
 const toggleMode = () => {
     reloadChatElems();
     reloadIsLive();
-    if (isLive) {
-        toggleHideElements();
-        toggleChatStyle();
-        toggleVideoPlayerStyle();
-        toggleIsOneColumn();
+    toggleChatStyle();
+    toggleHideElements();
+    toggleVideoPlayerStyle();
+    toggleIsOneColumn();
 
+    console.debug(`[yttwthmode] toggled theater mode ${isTheater ? "enabled" : "disabled"}`);
+
+    if (isLive) {
         // Bad (but working) workaround for initialization race condition where the video player would be wider
         // than the theater container and clip inside the chat.
         const video = document.getElementsByClassName("video-stream")[0];
@@ -205,9 +206,6 @@ const toggleMode = () => {
         dirtyWorkaround();
         return true;
     } else {
-        toggleHideElements();
-        toggleVideoPlayerStyle();
-
         return false;
     }
 }
@@ -218,7 +216,6 @@ const toggleIsOneColumn = () => {
         sets calc(-480px + 100vh) to the max-height attribute and it fails to render.
         But even stranger, it works when ran directly from the debug console.
     */
-    reloadChatElems();
     const primaryColumn = document.getElementById("primary-inner") ? document.getElementById("primary-inner").parentElement : null;
     if (isTheater && isLive && isOneColumn) {
         theaterContainer.style.width = "100%";
@@ -315,11 +312,6 @@ const handleTheaterMode = (mutationsList) => {
             toggleVideoPlayerStyle();
         } else if (mutation.attributeName === "hidden" || mutation.attributeName === "video-id") {
             let ready;
-
-            isLive = false;
-            chat = null;
-            chatFrame = null;
-
             const tryToggle = (count) => {
                 ready = toggleMode();
                 if (count < 1 || ready) {
@@ -327,9 +319,9 @@ const handleTheaterMode = (mutationsList) => {
                 }
                 setTimeout(() => {
                     tryToggle(--count);
-                }, 500);
+                }, 1500);
             }
-            tryToggle(20);
+            tryToggle(5);
 
             if (!ready) {
                 toggleMode();
@@ -363,7 +355,7 @@ const tryInject = (count) => {
     }
     if (ready) {
         console.debug("[yttwthmode] player observer injected");
-        console.debug(`[yttwthmode] theaterMode ${isTheater ? "enabled" : "disabled"}`);
+        console.debug(`[yttwthmode] theater mode ${isTheater ? "enabled" : "disabled"}`);
         return;
     }
     setTimeout(() => {
@@ -390,11 +382,10 @@ initProperties().then(() => {
                     changed = true;
                 }
                 if (changed) {
-                    reloadChatElems();
                     reloadIsLive();
+                    toggleChatStyle();
                     toggleHideElements();
                     toggleVideoPlayerStyle();
-                    toggleChatStyle();
                     toggleIsOneColumn();
                     window.dispatchEvent(new Event("resize"));
                 }
