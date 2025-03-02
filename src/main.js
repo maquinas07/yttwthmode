@@ -20,7 +20,6 @@ let isOneColumn = false;
 let chatContainer;
 let chat;
 let chatFrame;
-let hideButton;
 let isChatDisabled;
 
 let isLive;
@@ -57,12 +56,13 @@ const reloadPageElems = () => {
 }
 
 const reloadChatElems = () => {
+    console.debug("[yttwthmode] reloading chat elements");
+
     chatContainer = document.getElementById("chat-container");
     chat = document.getElementById("chat");
     chatFrame = document.getElementById("chatframe");
-    hideButton = document.querySelector("#show-hide-button");
 
-    if (chatFrame && !hideButton?.querySelector("button")) {
+    if (chat && chat.querySelector("ytd-message-renderer.ytd-live-chat-frame")) {
         isChatDisabled = true;
     } else {
         isChatDisabled = false;
@@ -70,6 +70,8 @@ const reloadChatElems = () => {
 }
 
 const reloadIsLive = () => {
+    console.debug(`[yttwthmode] updating live state`);
+
     isLive = !!(chat || chatFrame || chatContainer?.querySelector("#chat"));
     isArchive = !!(isLive && normalComments);
     if (isChatDisabled || (isArchive && normalComments.getAttribute("hidden") === null && !properties.enabledInArchives)) {
@@ -96,9 +98,6 @@ const toggleVideoPlayerStyle = () => {
         } else {
             theaterContainer.style.left = "";
         }
-        if (isOneColumn) {
-            toggleIsOneColumn();
-        }
         prevScroll = document.documentElement.scrollTop;
         scroll(0, 0);
     } else {
@@ -118,20 +117,10 @@ const toggleVideoPlayerStyle = () => {
     }
 }
 
-const showChat = () => {
-    hideButton.querySelector("button")?.click();
-    if (pageManagerContainer.getAttribute("live-chat-present-and-expanded")) {
-        setTimeout(() => {
-            showChat();
-        }, 100);
-    }
-}
-
 const toggleChatFrameStyle = (chatElem, overrideTop) => {
     if (isTheater && isLive) {
-        if (hideButton) {
-            showChat();
-            hideButton.style.display = "none";
+        if (chat.getAttribute("collapsed") === "") {
+            chat.dispatchEvent(new CustomEvent('yt-toggle-button'));
         }
         chatElem.style.width = `${properties.chatWidth}px`;
         chatElem.style.height = `calc(100vh - ${properties.headerNav ? headerNavHeight : 0}px)`;
@@ -163,9 +152,7 @@ const toggleChatFrameStyle = (chatElem, overrideTop) => {
         chatElem.style.top = "";
         chatElem.style.left = "";
         chatElem.style.right = "";
-        if (hideButton) {
-            hideButton.style.display = "";
-        }
+        window.dispatchEvent(new Event("resize"));
     }
 }
 
@@ -199,6 +186,7 @@ const toggleMode = () => {
         toggleHideElements();
         toggleChatStyle();
         toggleVideoPlayerStyle();
+        toggleIsOneColumn();
 
         // Bad (but working) workaround for initialization race condition where the video player would be wider
         // than the theater container and clip inside the chat.
@@ -230,15 +218,12 @@ const toggleIsOneColumn = () => {
         sets calc(-480px + 100vh) to the max-height attribute and it fails to render.
         But even stranger, it works when ran directly from the debug console.
     */
+    reloadChatElems();
     const primaryColumn = document.getElementById("primary-inner") ? document.getElementById("primary-inner").parentElement : null;
     if (isTheater && isLive && isOneColumn) {
-        reloadChatElems();
         theaterContainer.style.width = "100%";
         theaterContainer.style.height = "";
         if (!properties.hideChat) {
-            if (hideButton) {
-                hideButton.style.display = "none";
-            }
             chat.style.marginTop = "0px";
             chat.style.right = "";
             chat.style.top = "";
@@ -273,11 +258,28 @@ const toggleIsOneColumn = () => {
             normalComments.style.display = "none";
         }
     } else {
+        theaterContainer.style.width = "";
+        theaterContainer.style.height = "";
+
         chat.style.marginTop = "";
-        chat.style.height = "";
-        chatContainer.style.zIndex = "";
-        toggleVideoPlayerStyle();
-        toggleChatStyle();
+        chat.style.right = "";
+        chat.style.top = "";
+        chat.style.position = "";
+        chat.style.width = "";
+        chat.style.height = ""
+
+        chatFrame.style.width = "";
+        chatFrame.style.height = "";
+        chatFrame.style.right = "";
+        chatFrame.style.top = "";
+        chatFrame.style.position = "";
+
+        chatContainer.style.width = "";
+        chatContainer.style.height = "";
+        chatContainer.style.position = "";
+        chatContainer.style.right = "";
+        chatContainer.style.top = "";
+        chatContainer.style.zIndex = ""
         if (primaryColumn) {
             primaryColumn.style.marginLeft = "";
             primaryColumn.style.paddingRight = "";
@@ -287,9 +289,9 @@ const toggleIsOneColumn = () => {
         if (isArchive) {
             normalComments.style.display = "";
         }
-        if (hideButton) {
-            hideButton.style.display = "";
-        }
+        toggleChatStyle();
+        toggleHideElements();
+        toggleVideoPlayerStyle();
     }
 }
 
@@ -299,27 +301,18 @@ const handleTheaterMode = (mutationsList) => {
             isTheater = !isTheater;
             toggleMode();
         } else if (mutation.attributeName === "is-two-columns_") {
-            isOneColumn = mutation.target.getAttribute("is-two-columns_") == null;
-            if (mutation.target.getAttribute("fullscreen") == null) {
-                toggleVideoPlayerStyle();
-                toggleIsOneColumn();
-            }
+            isOneColumn = mutation.target.getAttribute("is-two-columns_") === null;
+            toggleMode();
         } else if (mutation.attributeName === "fullscreen") {
-            if (mutation.target.getAttribute("fullscreen") != null) {
-                chatFrame.style.zIndex = -1;
-                chat.style.zIndex = -1;
-                theaterContainer.style.width = "100%";
-                theaterContainer.style.height = "100vh";
-                pageManager.style.marginTop = "";
+            if (mutation.target.getAttribute("fullscreen") !== null) {
+                isLive = false;
+                isArchive = false;
             } else {
-                chat.style.zIndex = "";
-                chatFrame.style.zIndex = "";
                 reloadIsLive();
-                toggleHideElements();
-                toggleVideoPlayerStyle();
-                toggleChatStyle();
-                toggleIsOneColumn();
             }
+            toggleChatStyle();
+            toggleHideElements();
+            toggleVideoPlayerStyle();
         } else if (mutation.attributeName === "hidden" || mutation.attributeName === "video-id") {
             let ready;
 
